@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6.0
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: webprobe_metrics
+
+  app:
+    build:
+      context: .
+      target: dev
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      MONGO_URI: mongodb://mongo:27017
+      DB_NAME: webprobe_metrics
+      CORS_ORIGIN: "*"
+      NODE_ENV: development
+    volumes:
+      - ./:/usr/src/app   # Mount source code for live reload
+    command: npm run dev   # Use nodemon for auto-reload
+    stdin_open: true
+    tty: true
+
+volumes:
+  mongo-data:
